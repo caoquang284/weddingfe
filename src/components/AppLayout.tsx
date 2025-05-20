@@ -1,14 +1,13 @@
-// src/components/AppLayout.tsx
 import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 const AppLayout = () => {
   return (
     <div>
       <Navbar />
-      <main className="p-4">
-        <Outlet />
-      </main>
+      <Outlet />
+      <Footer />
     </div>
   );
 };
