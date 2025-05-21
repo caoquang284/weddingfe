@@ -25,9 +25,8 @@ const Navbar = () => {
   const navItems = user?.role === "admin" ? adminNav : userNav;
 
   return (
-    <nav className="bg-white text-black px-6 py-4 shadow-md">
+    <nav className="fixed top-0 left-0 right-0 bg-white text-black px-6 py-4 shadow-md z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        
         {/* Menu */}
         <div className="flex-1 flex justify-center gap-8 font-medium">
           {navItems.map((item) => (
