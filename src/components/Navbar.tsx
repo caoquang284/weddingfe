@@ -14,9 +14,9 @@ const Navbar = () => {
 
   const adminNav = [
     { path: "/", label: "Tổng quan" },
-    { path: "/halls", label: "Quản lý sảnh" },
-    { path: "/menus", label: "Quản lý thực đơn" },
-    { path: "/services", label: "Quản lý dịch vụ" },
+    { path: "/halls_admin", label: "Quản lý sảnh" },
+    { path: "/menus_admin", label: "Quản lý thực đơn" },
+    { path: "/services_admin", label: "Quản lý dịch vụ" },
     { path: "/invoices", label: "Quản lý hóa đơn" },
     { path: "/reports", label: "Báo cáo doanh thu" },
     { path: "/permissions", label: "Phân quyền" },
