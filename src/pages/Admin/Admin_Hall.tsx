@@ -239,207 +239,171 @@ function Admin_Hall() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Hàng đầu tiên: Tìm kiếm và thêm sảnh */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">
-          Danh sách sảnh có sẵn
-        </h2>
-        <div className="flex items-center gap-4">
-          <input
-            type="text"
-            placeholder="Tìm kiếm sảnh..."
-            value={hallSearchTerm}
-            onChange={(e) => setHallSearchTerm(e.target.value)}
-            className="w-64 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            onClick={openAddHallModal}
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Thêm sảnh
-          </button>
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Hàng đầu tiên: Tìm kiếm và thêm sảnh */}
+        <div className="mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
+            Danh sách sảnh có sẵn
+          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <input
+              type="text"
+              placeholder="Tìm kiếm sảnh..."
+              value={hallSearchTerm}
+              onChange={(e) => setHallSearchTerm(e.target.value)}
+              className="w-full sm:w-64 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              onClick={openAddHallModal}
+              className="w-full sm:w-auto bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              Thêm sảnh
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Bảng sảnh */}
-      <div className="bg-white shadow-md rounded-lg overflow-hidden mb-8">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tên sảnh
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Loại sảnh
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Số lượng bàn tối đa
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ghi chú
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ảnh bìa
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hành động
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+        {/* Danh sách sảnh: Thay thế bảng bằng danh sách card trên mobile */}
+        <div className="mb-8">
+          {/* Ẩn bảng trên mobile */}
+          <div className="hidden sm:block bg-white shadow-md rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tên sảnh
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Loại sảnh
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Số lượng bàn tối đa
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ghi chú
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ảnh bìa
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hành động
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredHalls.map((hall) => {
+                  const hallType = hallTypes.find((ht) => ht.MaLoaiSanh === hall.MaLoaiSanh);
+                  return (
+                    <tr key={hall.MaSanh}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {hall.TenSanh}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {hallType ? hallType.TenLoaiSanh : "Chưa phân loại"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {hall.SoLuongBanToiDa}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {hall.GhiChu || "Không có ghi chú"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {hall.Cover_Img ? (
+                          <img
+                            src={hall.Cover_Img}
+                            alt={hall.TenSanh}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        ) : (
+                          "Không có ảnh"
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => openEditHallModal(hall)}
+                          className="text-blue-600 hover:text-blue-800 mr-4"
+                        >
+                          Sửa
+                        </button>
+                        <button
+                          onClick={() => handleDeleteHall(hall.MaSanh)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Hiển thị dạng card trên mobile */}
+          <div className="block sm:hidden space-y-4">
             {filteredHalls.map((hall) => {
               const hallType = hallTypes.find((ht) => ht.MaLoaiSanh === hall.MaLoaiSanh);
               return (
-                <tr key={hall.MaSanh}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {hall.TenSanh}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {hallType ? hallType.TenLoaiSanh : "Chưa phân loại"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {hall.SoLuongBanToiDa}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {hall.GhiChu || "Không có ghi chú"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {hall.Cover_Img ? (
-                      <img
-                        src={hall.Cover_Img}
-                        alt={hall.TenSanh}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                    ) : (
-                      "Không có ảnh"
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => openEditHallModal(hall)}
-                      className="text-blue-600 hover:text-blue-800 mr-4"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleDeleteHall(hall.MaSanh)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                </tr>
+                <div
+                  key={hall.MaSanh}
+                  className="bg-white shadow-md rounded-lg p-4"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {hall.TenSanh}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Loại: {hallType ? hallType.TenLoaiSanh : "Chưa phân loại"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Số bàn tối đa: {hall.SoLuongBanToiDa}
+                      </p>
+                      <p className="text-sm text-gray-500 line-clamp-2">
+                        Ghi chú: {hall.GhiChu || "Không có ghi chú"}
+                      </p>
+                      {hall.Cover_Img && (
+                        <img
+                          src={hall.Cover_Img}
+                          alt={hall.TenSanh}
+                          className="w-24 h-24 object-cover rounded mt-2"
+                        />
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openEditHallModal(hall)}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDeleteHall(hall.MaSanh)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  </div>
+                </div>
               );
             })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Hàng thứ hai: Tìm kiếm và thêm loại sảnh */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Quản lý loại sảnh</h2>
-        <div className="flex items-center gap-4">
-          <select
-            value={hallTypeFilter}
-            onChange={(e) => setHallTypeFilter(e.target.value)}
-            className="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Tất cả loại sảnh</option>
-            {hallTypes.map((hallType) => (
-              <option key={hallType.MaLoaiSanh} value={hallType.MaLoaiSanh || ""}>
-                {hallType.TenLoaiSanh}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={openAddHallTypeModal}
-            className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600"
-          >
-            Thêm loại sảnh
-          </button>
+          </div>
         </div>
-      </div>
 
-      {/* Bảng loại sảnh */}
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tên loại sảnh
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Đơn giá bàn tối thiểu (VNĐ)
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hành động
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {hallTypes.map((hallType) => (
-              <tr key={hallType.MaLoaiSanh}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {hallType.TenLoaiSanh}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {hallType.DonGiaBanToiThieu.toLocaleString("vi-VN")}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => openEditHallTypeModal(hallType)}
-                    className="text-blue-600 hover:text-blue-800 mr-4"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDeleteHallType(hallType.MaLoaiSanh)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    Xóa
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal thêm/sửa sảnh */}
-      {isHallModalOpen && (
-        <div
-          className="fixed top-1/2 left-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-lg border border-gray-300
-                  transform -translate-x-1/2 -translate-y-1/2"
-        >
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            {isHallEditMode ? "Sửa sảnh" : "Thêm sảnh"}
-          </h3>
-          <form onSubmit={handleHallSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Tên sảnh
-              </label>
-              <input
-                type="text"
-                name="TenSanh"
-                value={hallFormData.TenSanh}
-                onChange={handleHallInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Loại sảnh
-              </label>
+        {/* Hàng thứ hai: Tìm kiếm và thêm loại sảnh */}
+        <div className="mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
+            Quản lý loại sảnh
+          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <select
-                name="MaLoaiSanh"
-                value={hallFormData.MaLoaiSanh || ""}
-                onChange={handleHallInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                value={hallTypeFilter}
+                onChange={(e) => setHallTypeFilter(e.target.value)}
+                className="w-full sm:w-48 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Chọn loại sảnh</option>
+                <option value="">Tất cả loại sảnh</option>
                 {hallTypes.map((hallType) => (
                   <option key={hallType.MaLoaiSanh} value={hallType.MaLoaiSanh || ""}>
                     {hallType.TenLoaiSanh}
@@ -447,116 +411,250 @@ function Admin_Hall() {
                 ))}
               </select>
             </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Số lượng bàn tối đa
-              </label>
-              <input
-                type="number"
-                name="SoLuongBanToiDa"
-                value={hallFormData.SoLuongBanToiDa}
-                onChange={handleHallInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Ghi chú
-              </label>
-              <textarea
-                name="GhiChu"
-                value={hallFormData.GhiChu}
-                onChange={handleHallInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Ảnh bìa
-              </label>
-              <input
-                type="text"
-                name="Cover_Img"
-                value={hallFormData.Cover_Img}
-                onChange={handleHallInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                placeholder="Nhập URL ảnh bìa"
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={closeHallModal}
-                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                {isHallEditMode ? "Cập nhật" : "Thêm"}
-              </button>
-            </div>
-          </form>
+            <button
+              onClick={openAddHallTypeModal}
+              className="w-full sm:w-auto bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600"
+            >
+              Thêm loại sảnh
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Modal thêm/sửa loại sảnh */}
-      {isHallTypeModalOpen && (
-        <div
-          className="fixed top-1/2 left-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-lg border border-gray-300
-                  transform -translate-x-1/2 -translate-y-1/2"
-        >
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            {isHallTypeEditMode ? "Sửa loại sảnh" : "Thêm loại sảnh"}
-          </h3>
-          <form onSubmit={handleHallTypeSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Tên loại sảnh
-              </label>
-              <input
-                type="text"
-                name="TenLoaiSanh"
-                value={hallTypeFormData.TenLoaiSanh}
-                onChange={handleHallTypeInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Đơn giá bàn tối thiểu (VNĐ)
-              </label>
-              <input
-                type="number"
-                name="DonGiaBanToiThieu"
-                value={hallTypeFormData.DonGiaBanToiThieu}
-                onChange={handleHallTypeInputChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                required
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={closeHallTypeModal}
-                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+        {/* Danh sách loại sảnh: Thay thế bảng bằng danh sách card trên mobile */}
+        <div>
+          {/* Ẩn bảng trên mobile */}
+          <div className="hidden sm:block bg-white shadow-md rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tên loại sảnh
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Đơn giá bàn tối thiểu (VNĐ)
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hành động
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {hallTypes.map((hallType) => (
+                  <tr key={hallType.MaLoaiSanh}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {hallType.TenLoaiSanh}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {hallType.DonGiaBanToiThieu.toLocaleString("vi-VN")}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => openEditHallTypeModal(hallType)}
+                        className="text-blue-600 hover:text-blue-800 mr-4"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDeleteHallType(hallType.MaLoaiSanh)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Hiển thị dạng card trên mobile */}
+          <div className="block sm:hidden space-y-4">
+            {hallTypes.map((hallType) => (
+              <div
+                key={hallType.MaLoaiSanh}
+                className="bg-white shadow-md rounded-lg p-4"
               >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600"
-              >
-                {isHallTypeEditMode ? "Cập nhật" : "Thêm"}
-              </button>
-            </div>
-          </form>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {hallType.TenLoaiSanh}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Đơn giá: {hallType.DonGiaBanToiThieu.toLocaleString("vi-VN")} VNĐ
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => openEditHallTypeModal(hallType)}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => handleDeleteHallType(hallType.MaLoaiSanh)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* Modal thêm/sửa sảnh */}
+        {isHallModalOpen && (
+          <div
+            className="fixed top-1/2 left-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-lg border border-gray-300
+                  transform -translate-x-1/2 -translate-y-1/2"
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              {isHallEditMode ? "Sửa sảnh" : "Thêm sảnh"}
+            </h3>
+            <form onSubmit={handleHallSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Tên sảnh
+                </label>
+                <input
+                  type="text"
+                  name="TenSanh"
+                  value={hallFormData.TenSanh}
+                  onChange={handleHallInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Loại sảnh
+                </label>
+                <select
+                  name="MaLoaiSanh"
+                  value={hallFormData.MaLoaiSanh || ""}
+                  onChange={handleHallInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                >
+                  <option value="">Chọn loại sảnh</option>
+                  {hallTypes.map((hallType) => (
+                    <option key={hallType.MaLoaiSanh} value={hallType.MaLoaiSanh || ""}>
+                      {hallType.TenLoaiSanh}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Số lượng bàn tối đa
+                </label>
+                <input
+                  type="number"
+                  name="SoLuongBanToiDa"
+                  value={hallFormData.SoLuongBanToiDa}
+                  onChange={handleHallInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Ghi chú
+                </label>
+                <textarea
+                  name="GhiChu"
+                  value={hallFormData.GhiChu}
+                  onChange={handleHallInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Ảnh bìa
+                </label>
+                <input
+                  type="text"
+                  name="Cover_Img"
+                  value={hallFormData.Cover_Img}
+                  onChange={handleHallInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                  placeholder="Nhập URL ảnh bìa"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={closeHallModal}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+                >
+                  {isHallEditMode ? "Cập nhật" : "Thêm"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Modal thêm/sửa loại sảnh */}
+        {isHallTypeModalOpen && (
+          <div
+            className="fixed top-1/2 left-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-lg border border-gray-300
+                  transform -translate-x-1/2 -translate-y-1/2"
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              {isHallTypeEditMode ? "Sửa loại sảnh" : "Thêm loại sảnh"}
+            </h3>
+            <form onSubmit={handleHallTypeSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Tên loại sảnh
+                </label>
+                <input
+                  type="text"
+                  name="TenLoaiSanh"
+                  value={hallTypeFormData.TenLoaiSanh}
+                  onChange={handleHallTypeInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Đơn giá bàn tối thiểu (VNĐ)
+                </label>
+                <input
+                  type="number"
+                  name="DonGiaBanToiThieu"
+                  value={hallTypeFormData.DonGiaBanToiThieu}
+                  onChange={handleHallTypeInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={closeHallTypeModal}
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600"
+                >
+                  {isHallTypeEditMode ? "Cập nhật" : "Thêm"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
