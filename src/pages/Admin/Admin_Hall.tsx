@@ -1,4 +1,6 @@
 import { useState } from "react";
+
+// Định nghĩa interface
 interface HallType {
   MaLoaiSanh: number | null;
   TenLoaiSanh: string;
@@ -56,8 +58,7 @@ function Admin_Hall() {
 
   // State cho modal và form
   const [isHallModalOpen, setIsHallModalOpen] = useState<boolean>(false);
-  const [isHallTypeModalOpen, setIsHallTypeModalOpen] =
-    useState<boolean>(false);
+  const [isHallTypeModalOpen, setIsHallTypeModalOpen] = useState<boolean>(false);
   const [hallFormData, setHallFormData] = useState<HallFormData>({
     MaSanh: null,
     TenSanh: "",
@@ -107,11 +108,7 @@ function Admin_Hall() {
 
   // Mở modal để thêm/sửa loại sảnh
   const openAddHallTypeModal = () => {
-    setHallTypeFormData({
-      MaLoaiSanh: null,
-      TenLoaiSanh: "",
-      DonGiaBanToiThieu: "",
-    });
+    setHallTypeFormData({ MaLoaiSanh: null, TenLoaiSanh: "", DonGiaBanToiThieu: "" });
     setIsHallTypeEditMode(false);
     setIsHallTypeModalOpen(true);
   };
@@ -131,11 +128,7 @@ function Admin_Hall() {
   const closeHallTypeModal = () => setIsHallTypeModalOpen(false);
 
   // Xử lý thay đổi input trong form
-  const handleHallInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleHallInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setHallFormData((prev) => ({
       ...prev,
@@ -143,9 +136,7 @@ function Admin_Hall() {
     }));
   };
 
-  const handleHallTypeInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleHallTypeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setHallTypeFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -175,10 +166,7 @@ function Admin_Hall() {
       );
     } else {
       const newHall: Hall = {
-        MaSanh:
-          halls.length > 0
-            ? Math.max(...halls.map((h) => h.MaSanh || 0)) + 1
-            : 1,
+        MaSanh: halls.length > 0 ? Math.max(...halls.map((h) => h.MaSanh || 0)) + 1 : 1,
         TenSanh: hallFormData.TenSanh,
         MaLoaiSanh: hallFormData.MaLoaiSanh,
         SoLuongBanToiDa: soLuongBanToiDa,
@@ -212,10 +200,7 @@ function Admin_Hall() {
       );
     } else {
       const newHallType: HallType = {
-        MaLoaiSanh:
-          hallTypes.length > 0
-            ? Math.max(...hallTypes.map((ht) => ht.MaLoaiSanh || 0)) + 1
-            : 1,
+        MaLoaiSanh: hallTypes.length > 0 ? Math.max(...hallTypes.map((ht) => ht.MaLoaiSanh || 0)) + 1 : 1,
         TenLoaiSanh: hallTypeFormData.TenLoaiSanh,
         DonGiaBanToiThieu: donGiaBanToiThieu,
       };
@@ -238,16 +223,12 @@ function Admin_Hall() {
 
   // Xóa loại sảnh
   const handleDeleteHallType = (MaLoaiSanh: number | null) => {
-    const isHallTypeInUse = halls.some(
-      (hall) => hall.MaLoaiSanh === MaLoaiSanh
-    );
+    const isHallTypeInUse = halls.some((hall) => hall.MaLoaiSanh === MaLoaiSanh);
     if (isHallTypeInUse) {
       alert("Không thể xóa loại sảnh đang được sử dụng!");
       return;
     }
-    setHallTypes((prev) =>
-      prev.filter((hallType) => hallType.MaLoaiSanh !== MaLoaiSanh)
-    );
+    setHallTypes((prev) => prev.filter((hallType) => hallType.MaLoaiSanh !== MaLoaiSanh));
   };
 
   // Lọc sảnh
@@ -311,9 +292,7 @@ function Admin_Hall() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredHalls.map((hall) => {
-                  const hallType = hallTypes.find(
-                    (ht) => ht.MaLoaiSanh === hall.MaLoaiSanh
-                  );
+                  const hallType = hallTypes.find((ht) => ht.MaLoaiSanh === hall.MaLoaiSanh);
                   return (
                     <tr key={hall.MaSanh}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -363,9 +342,7 @@ function Admin_Hall() {
           {/* Hiển thị dạng card trên mobile */}
           <div className="block sm:hidden space-y-4">
             {filteredHalls.map((hall) => {
-              const hallType = hallTypes.find(
-                (ht) => ht.MaLoaiSanh === hall.MaLoaiSanh
-              );
+              const hallType = hallTypes.find((ht) => ht.MaLoaiSanh === hall.MaLoaiSanh);
               return (
                 <div
                   key={hall.MaSanh}
@@ -377,8 +354,7 @@ function Admin_Hall() {
                         {hall.TenSanh}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Loại:{" "}
-                        {hallType ? hallType.TenLoaiSanh : "Chưa phân loại"}
+                        Loại: {hallType ? hallType.TenLoaiSanh : "Chưa phân loại"}
                       </p>
                       <p className="text-sm text-gray-500">
                         Số bàn tối đa: {hall.SoLuongBanToiDa}
@@ -429,10 +405,7 @@ function Admin_Hall() {
               >
                 <option value="">Tất cả loại sảnh</option>
                 {hallTypes.map((hallType) => (
-                  <option
-                    key={hallType.MaLoaiSanh}
-                    value={hallType.MaLoaiSanh || ""}
-                  >
+                  <option key={hallType.MaLoaiSanh} value={hallType.MaLoaiSanh || ""}>
                     {hallType.TenLoaiSanh}
                   </option>
                 ))}
@@ -482,9 +455,7 @@ function Admin_Hall() {
                         Sửa
                       </button>
                       <button
-                        onClick={() =>
-                          handleDeleteHallType(hallType.MaLoaiSanh)
-                        }
+                        onClick={() => handleDeleteHallType(hallType.MaLoaiSanh)}
                         className="text-red-600 hover:text-red-800"
                       >
                         Xóa
@@ -509,8 +480,7 @@ function Admin_Hall() {
                       {hallType.TenLoaiSanh}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      Đơn giá:{" "}
-                      {hallType.DonGiaBanToiThieu.toLocaleString("vi-VN")} VNĐ
+                      Đơn giá: {hallType.DonGiaBanToiThieu.toLocaleString("vi-VN")} VNĐ
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -568,10 +538,7 @@ function Admin_Hall() {
                 >
                   <option value="">Chọn loại sảnh</option>
                   {hallTypes.map((hallType) => (
-                    <option
-                      key={hallType.MaLoaiSanh}
-                      value={hallType.MaLoaiSanh || ""}
-                    >
+                    <option key={hallType.MaLoaiSanh} value={hallType.MaLoaiSanh || ""}>
                       {hallType.TenLoaiSanh}
                     </option>
                   ))}
