@@ -5,6 +5,9 @@ interface Dish {
   id: number | null;
   name: string;
   categoryId: number | null;
+  price: number;
+  note: string;
+  imageUrl?: string;
 }
 
 interface Category {
@@ -30,6 +33,15 @@ interface DishFormData {
   id: number | null;
   name: string;
   categoryId: number | null;
+  price: string;
+  note: string;
+  imageUrl: string;
+}
+
+interface ConfirmationModal {
+  isOpen: boolean;
+  message: string;
+  onConfirm: () => void;
 }
 
 function Menus() {
@@ -50,11 +62,46 @@ function Menus() {
   ]);
 
   const [dishes, setDishes] = useState<Dish[]>([
-    { id: 1, name: "Soup bò củ quả xào", categoryId: 1 },
-    { id: 2, name: "Gỏi cuốn tôm thịt", categoryId: 1 },
-    { id: 3, name: "Cà ri gà + Bánh mì", categoryId: 2 },
-    { id: 4, name: "Soup củ nâu bắp", categoryId: 1 },
-    { id: 5, name: "Chả giò hongkong", categoryId: 3 },
+    {
+      id: 1,
+      name: "Soup bò củ quả xào",
+      categoryId: 1,
+      price: 150000,
+      note: "Hương vị đậm đà, bổ dưỡng",
+      imageUrl: "https://via.placeholder.com/100?text=Soup+Bo",
+    },
+    {
+      id: 2,
+      name: "Gỏi cuốn tôm thịt",
+      categoryId: 1,
+      price: 80000,
+      note: "Tôm tươi, rau sạch",
+      imageUrl: "https://via.placeholder.com/100?text=Goi+Cuon",
+    },
+    {
+      id: 3,
+      name: "Cà ri gà + Bánh mì",
+      categoryId: 2,
+      price: 200000,
+      note: "Cà ri thơm lừng, bánh mì giòn",
+      imageUrl: "https://via.placeholder.com/100?text=Ca+Ri+Ga",
+    },
+    {
+      id: 4,
+      name: "Soup củ nâu bắp",
+      categoryId: 1,
+      price: 120000,
+      note: "Thanh nhẹ, tốt cho sức khỏe",
+      imageUrl: "https://via.placeholder.com/100?text=Soup+Cu",
+    },
+    {
+      id: 5,
+      name: "Chả giò hongkong",
+      categoryId: 3,
+      price: 100000,
+      note: "Giòn rụm, nhân tôm thịt",
+      imageUrl: "https://via.placeholder.com/100?text=Cha+Gio",
+    },
   ]);
 
   const [categories, setCategories] = useState<Category[]>([
@@ -78,6 +125,9 @@ function Menus() {
     id: null,
     name: "",
     categoryId: null,
+    price: "",
+    note: "",
+    imageUrl: "",
   });
   const [categoryFormData, setCategoryFormData] = useState<Category>({
     id: null,
@@ -91,6 +141,15 @@ function Menus() {
   const [menuSearchTerm, setMenuSearchTerm] = useState<string>("");
   const [dishSearchTerm, setDishSearchTerm] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+
+  // State cho modal xác nhận
+  const [confirmationModal, setConfirmationModal] = useState<ConfirmationModal>(
+    {
+      isOpen: false,
+      message: "",
+      onConfirm: () => {},
+    }
+  );
 
   // Mở modal để thêm/sửa thực đơn
   const openAddMenuModal = () => {
@@ -112,7 +171,14 @@ function Menus() {
 
   // Mở modal để thêm/sửa món ăn
   const openAddDishModal = () => {
-    setDishFormData({ id: null, name: "", categoryId: null });
+    setDishFormData({
+      id: null,
+      name: "",
+      categoryId: null,
+      price: "",
+      note: "",
+      imageUrl: "",
+    });
     setIsDishEditMode(false);
     setIsDishModalOpen(true);
   };
@@ -122,6 +188,9 @@ function Menus() {
       id: dish.id,
       name: dish.name,
       categoryId: dish.categoryId,
+      price: dish.price.toString(),
+      note: dish.note,
+      imageUrl: dish.imageUrl || "",
     });
     setIsDishEditMode(true);
     setIsDishModalOpen(true);
@@ -144,6 +213,17 @@ function Menus() {
   const closeMenuModal = () => setIsMenuModalOpen(false);
   const closeDishModal = () => setIsDishModalOpen(false);
   const closeCategoryModal = () => setIsCategoryModalOpen(false);
+
+  // Đóng modal xác nhận
+  const closeConfirmationModal = () => {
+    setConfirmationModal({ isOpen: false, message: "", onConfirm: () => {} });
+  };
+
+  // Xử lý xác nhận hành động
+  const handleConfirm = () => {
+    confirmationModal.onConfirm();
+    closeConfirmationModal();
+  };
 
   // Xử lý thay đổi input trong form
   const handleMenuInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -171,101 +251,159 @@ function Menus() {
   // Thêm hoặc sửa thực đơn
   const handleMenuSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const priceNumber = Number(menuFormData.price);
-    if (isNaN(priceNumber) || priceNumber <= 0) {
-      alert("Giá phải là số dương");
+    const priceNumber = menuFormData.dishIds.reduce((total, dishId) => {
+      const dish = dishes.find((d) => d.id === dishId);
+      return total + (dish ? dish.price : 0);
+    }, 0);
+    if (menuFormData.dishIds.length === 0) {
+      alert("Vui lòng chọn ít nhất một món ăn!");
       return;
     }
-    if (isMenuEditMode) {
-      setMenus((prev) =>
-        prev.map((menu) =>
-          menu.id === menuFormData.id
-            ? {
-                ...menu,
-                name: menuFormData.name,
-                price: priceNumber,
-                dishIds: menuFormData.dishIds,
-              }
-            : menu
-        )
-      );
-    } else {
-      const newMenu: Menu = {
-        id: menus.length > 0 ? Math.max(...menus.map((m) => m.id || 0)) + 1 : 1,
-        name: menuFormData.name,
-        price: priceNumber,
-        dishIds: menuFormData.dishIds,
-      };
-      setMenus((prev) => [...prev, newMenu]);
-    }
-    closeMenuModal();
+    const action = () => {
+      if (isMenuEditMode) {
+        setMenus((prev) =>
+          prev.map((menu) =>
+            menu.id === menuFormData.id
+              ? {
+                  ...menu,
+                  name: menuFormData.name,
+                  price: priceNumber,
+                  dishIds: menuFormData.dishIds,
+                }
+              : menu
+          )
+        );
+      } else {
+        const newMenu: Menu = {
+          id:
+            menus.length > 0 ? Math.max(...menus.map((m) => m.id || 0)) + 1 : 1,
+          name: menuFormData.name,
+          price: priceNumber,
+          dishIds: menuFormData.dishIds,
+        };
+        setMenus((prev) => [...prev, newMenu]);
+      }
+      closeMenuModal();
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: `Bạn có chắc chắn muốn ${
+        isMenuEditMode ? "sửa" : "thêm"
+      } thực đơn này không?`,
+      onConfirm: action,
+    });
   };
 
   // Thêm hoặc sửa món ăn
   const handleDishSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isDishEditMode) {
-      setDishes((prev) =>
-        prev.map((dish) =>
-          dish.id === dishFormData.id
-            ? {
-                ...dish,
-                name: dishFormData.name,
-                categoryId: dishFormData.categoryId,
-              }
-            : dish
-        )
-      );
-    } else {
-      const newDish: Dish = {
-        id:
-          dishes.length > 0 ? Math.max(...dishes.map((d) => d.id || 0)) + 1 : 1,
-        name: dishFormData.name,
-        categoryId: dishFormData.categoryId,
-      };
-      setDishes((prev) => [...prev, newDish]);
+    const priceNumber = Number(dishFormData.price);
+    if (isNaN(priceNumber) || priceNumber <= 0) {
+      alert("Giá phải là số dương");
+      return;
     }
-    closeDishModal();
+    const action = () => {
+      if (isDishEditMode) {
+        setDishes((prev) =>
+          prev.map((dish) =>
+            dish.id === dishFormData.id
+              ? {
+                  ...dish,
+                  name: dishFormData.name,
+                  categoryId: dishFormData.categoryId,
+                  price: priceNumber,
+                  note: dishFormData.note,
+                  imageUrl: dishFormData.imageUrl || undefined,
+                }
+              : dish
+          )
+        );
+      } else {
+        const newDish: Dish = {
+          id:
+            dishes.length > 0
+              ? Math.max(...dishes.map((d) => d.id || 0)) + 1
+              : 1,
+          name: dishFormData.name,
+          categoryId: dishFormData.categoryId,
+          price: priceNumber,
+          note: dishFormData.note,
+          imageUrl: dishFormData.imageUrl || undefined,
+        };
+        setDishes((prev) => [...prev, newDish]);
+      }
+      closeDishModal();
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: `Bạn có chắc chắn muốn ${
+        isDishEditMode ? "sửa" : "thêm"
+      } món ăn này không?`,
+      onConfirm: action,
+    });
   };
 
   // Thêm hoặc sửa loại món ăn
   const handleCategorySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isCategoryEditMode) {
-      setCategories((prev) =>
-        prev.map((category) =>
-          category.id === categoryFormData.id
-            ? { ...category, name: categoryFormData.name }
-            : category
-        )
-      );
-    } else {
-      const newCategory: Category = {
-        id:
-          categories.length > 0
-            ? Math.max(...categories.map((c) => c.id || 0)) + 1
-            : 1,
-        name: categoryFormData.name,
-      };
-      setCategories((prev) => [...prev, newCategory]);
-    }
-    closeCategoryModal();
+    const action = () => {
+      if (isCategoryEditMode) {
+        setCategories((prev) =>
+          prev.map((category) =>
+            category.id === categoryFormData.id
+              ? { ...category, name: categoryFormData.name }
+              : category
+          )
+        );
+      } else {
+        const newCategory: Category = {
+          id:
+            categories.length > 0
+              ? Math.max(...categories.map((c) => c.id || 0)) + 1
+              : 1,
+          name: categoryFormData.name,
+        };
+        setCategories((prev) => [...prev, newCategory]);
+      }
+      closeCategoryModal();
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: `Bạn có chắc chắn muốn ${
+        isCategoryEditMode ? "sửa" : "thêm"
+      } loại món ăn này không?`,
+      onConfirm: action,
+    });
   };
 
   // Xóa thực đơn
   const handleDeleteMenu = (id: number | null) => {
-    setMenus((prev) => prev.filter((menu) => menu.id !== id));
+    const action = () => {
+      setMenus((prev) => prev.filter((menu) => menu.id !== id));
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: "Bạn có chắc chắn muốn xóa thực đơn này không?",
+      onConfirm: action,
+    });
   };
 
   // Xóa món ăn
   const handleDeleteDish = (id: number | null) => {
-    setDishes((prev) => prev.filter((dish) => dish.id !== id));
-    setMenus((prev) =>
-      prev.map((menu) => ({
-        ...menu,
-        dishIds: menu.dishIds.filter((dishId) => dishId !== id),
-      }))
-    );
+    const action = () => {
+      setDishes((prev) => prev.filter((dish) => dish.id !== id));
+      setMenus((prev) =>
+        prev.map((menu) => ({
+          ...menu,
+          dishIds: menu.dishIds.filter((dishId) => dishId !== id),
+        }))
+      );
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: "Bạn có chắc chắn muốn xóa món ăn này không?",
+      onConfirm: action,
+    });
   };
 
   // Xóa loại món ăn
@@ -275,7 +413,14 @@ function Menus() {
       alert("Không thể xóa loại món ăn đang được sử dụng!");
       return;
     }
-    setCategories((prev) => prev.filter((category) => category.id !== id));
+    const action = () => {
+      setCategories((prev) => prev.filter((category) => category.id !== id));
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: "Bạn có chắc chắn muốn xóa loại món ăn này không?",
+      onConfirm: action,
+    });
   };
 
   // Thêm món ăn vào thực đơn
@@ -442,7 +587,7 @@ function Menus() {
         {/* Hàng thứ hai: Tìm kiếm và thêm món ăn, loại món ăn */}
         <div className="mb-6">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
-            Quản lí món ăn
+            Quản lý món ăn
           </h2>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -496,6 +641,15 @@ function Menus() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Loại món ăn
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Đơn giá (VNĐ)
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ghi chú
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ảnh
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hành động
                   </th>
@@ -513,6 +667,23 @@ function Menus() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {category ? category.name : "Chưa phân loại"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {dish.price.toLocaleString("vi-VN")}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {dish.note || "Không có ghi chú"}
+                      </td>
+                      <td className="px-6 py-4">
+                        {dish.imageUrl ? (
+                          <img
+                            src={dish.imageUrl}
+                            alt={dish.name}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <span className="text-gray-500">Không có ảnh</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
@@ -554,6 +725,19 @@ function Menus() {
                       <p className="text-sm text-gray-500">
                         Loại: {category ? category.name : "Chưa phân loại"}
                       </p>
+                      <p className="text-sm text-gray-500">
+                        Giá: {dish.price.toLocaleString("vi-VN")} VNĐ
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Ghi chú: {dish.note || "Không có ghi chú"}
+                      </p>
+                      {dish.imageUrl && (
+                        <img
+                          src={dish.imageUrl}
+                          alt={dish.name}
+                          className="w-16 h-16 object-cover rounded-lg mt-2"
+                        />
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -580,7 +764,7 @@ function Menus() {
         {isMenuModalOpen && (
           <div
             className="fixed top-1/2 left-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-lg border border-gray-300
-                  transform -translate-x-1/2 -translate-y-1/2"
+                transform -translate-x-1/2 -translate-y-1/2"
           >
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               {isMenuEditMode ? "Sửa thực đơn" : "Thêm thực đơn"}
@@ -601,16 +785,17 @@ function Menus() {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  Giá (VNĐ)
+                  Giá tổng (VNĐ)
                 </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={menuFormData.price}
-                  onChange={handleMenuInputChange}
-                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                  required
-                />
+                <p className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 text-gray-700">
+                  {menuFormData.dishIds
+                    .reduce((total, dishId) => {
+                      const dish = dishes.find((d) => d.id === dishId);
+                      return total + (dish ? dish.price : 0);
+                    }, 0)
+                    .toLocaleString("vi-VN")}{" "}
+                  VNĐ
+                </p>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
@@ -624,7 +809,9 @@ function Menus() {
                         key={dishId}
                         className="flex items-center gap-2 mb-2"
                       >
-                        <span>{dish.name}</span>
+                        <span>
+                          {dish.name} ({dish.price.toLocaleString("vi-VN")} VNĐ)
+                        </span>
                         <button
                           type="button"
                           onClick={() => removeDishFromMenu(dishId)}
@@ -652,7 +839,7 @@ function Menus() {
                       )
                       .map((dish) => (
                         <option key={dish.id} value={dish.id || ""}>
-                          {dish.name}
+                          {dish.name} ({dish.price.toLocaleString("vi-VN")} VNĐ)
                         </option>
                       ))}
                   </select>
@@ -718,6 +905,43 @@ function Menus() {
                   ))}
                 </select>
               </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Đơn giá (VNĐ)
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={dishFormData.price}
+                  onChange={handleDishInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-500 focus:ring-opacity-50"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Ghi chú
+                </label>
+                <input
+                  type="text"
+                  name="note"
+                  value={dishFormData.note}
+                  onChange={handleDishInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-500 focus:ring-opacity-50"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Ảnh URL
+                </label>
+                <input
+                  type="text"
+                  name="imageUrl"
+                  value={dishFormData.imageUrl}
+                  onChange={handleDishInputChange}
+                  className="py-2 px-3 mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-500 focus:ring-opacity-50"
+                />
+              </div>
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
@@ -776,6 +1000,37 @@ function Menus() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* Modal xác nhận */}
+        {confirmationModal.isOpen && (
+          <div
+            className="fixed top-1/2 left-1/2 z-50 w-full max-w-sm bg-white rounded-lg p-6 shadow-lg border border-gray-300
+                transform -translate-x-1/2 -translate-y-1/2"
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Xác nhận
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {confirmationModal.message}
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={closeConfirmationModal}
+                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirm}
+                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+              >
+                Xác nhận
+              </button>
+            </div>
           </div>
         )}
       </div>

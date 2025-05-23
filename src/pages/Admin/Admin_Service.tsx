@@ -6,6 +6,8 @@ interface Service {
   description: string;
   price: number;
   categoryId: number | null;
+  imageUrl?: string; // Thêm trường ảnh URL
+  note?: string; // Thêm trường ghi chú
 }
 
 interface Category {
@@ -19,6 +21,14 @@ interface FormData {
   description: string;
   price: string;
   categoryId: number | null;
+  imageUrl: string; // Thêm trường ảnh URL
+  note: string; // Thêm trường ghi chú
+}
+
+interface ConfirmationModal {
+  isOpen: boolean;
+  message: string;
+  onConfirm: () => void;
 }
 
 function Services() {
@@ -29,6 +39,8 @@ function Services() {
       description: "Trang trí bàn tiệc với hoa tươi",
       price: 5000000,
       categoryId: 1,
+      imageUrl: "https://via.placeholder.com/100?text=Hoa",
+      note: "Hoa tươi nhập khẩu, thiết kế sang trọng",
     },
     {
       id: 2,
@@ -36,6 +48,8 @@ function Services() {
       description: "Hệ thống âm thanh và ánh sáng chuyên nghiệp",
       price: 10000000,
       categoryId: 2,
+      imageUrl: "https://via.placeholder.com/100?text=Am+Thanh",
+      note: "Thiết bị hiện đại, phù hợp sự kiện lớn",
     },
     {
       id: 3,
@@ -43,6 +57,8 @@ function Services() {
       description: "Gói chụp ảnh cưới chuyên nghiệp",
       price: 8000000,
       categoryId: 3,
+      imageUrl: "https://via.placeholder.com/100?text=Chup+Anh",
+      note: "Ekip chuyên nghiệp, chỉnh sửa ảnh cao cấp",
     },
   ]);
 
@@ -61,6 +77,8 @@ function Services() {
     description: "",
     price: "",
     categoryId: null,
+    imageUrl: "",
+    note: "",
   });
   const [categoryFormData, setCategoryFormData] = useState<Category>({
     id: null,
@@ -72,6 +90,15 @@ function Services() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
 
+  // State cho modal xác nhận
+  const [confirmationModal, setConfirmationModal] = useState<ConfirmationModal>(
+    {
+      isOpen: false,
+      message: "",
+      onConfirm: () => {},
+    }
+  );
+
   const openAddModal = () => {
     setFormData({
       id: null,
@@ -79,6 +106,8 @@ function Services() {
       description: "",
       price: "",
       categoryId: null,
+      imageUrl: "",
+      note: "",
     });
     setIsEditMode(false);
     setIsModalOpen(true);
@@ -91,6 +120,8 @@ function Services() {
       description: service.description,
       price: service.price.toString(),
       categoryId: service.categoryId,
+      imageUrl: service.imageUrl || "",
+      note: service.note || "",
     });
     setIsEditMode(true);
     setIsModalOpen(true);
@@ -110,6 +141,9 @@ function Services() {
 
   const closeModal = () => setIsModalOpen(false);
   const closeCategoryModal = () => setIsCategoryModalOpen(false);
+  const closeConfirmationModal = () => {
+    setConfirmationModal({ isOpen: false, message: "", onConfirm: () => {} });
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -126,6 +160,11 @@ function Services() {
     }));
   };
 
+  const handleConfirm = () => {
+    confirmationModal.onConfirm();
+    closeConfirmationModal();
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const priceNumber = Number(formData.price);
@@ -133,34 +172,47 @@ function Services() {
       alert("Giá phải là số dương");
       return;
     }
-    if (isEditMode) {
-      setServices((prev) =>
-        prev.map((service) =>
-          service.id === formData.id
-            ? {
-                ...service,
-                name: formData.name,
-                description: formData.description,
-                price: priceNumber,
-                categoryId: formData.categoryId,
-              }
-            : service
-        )
-      );
-    } else {
-      const newService: Service = {
-        id:
-          services.length > 0
-            ? Math.max(...services.map((s) => s.id || 0)) + 1
-            : 1,
-        name: formData.name,
-        description: formData.description,
-        price: priceNumber,
-        categoryId: formData.categoryId,
-      };
-      setServices((prev) => [...prev, newService]);
-    }
-    closeModal();
+    const action = () => {
+      if (isEditMode) {
+        setServices((prev) =>
+          prev.map((service) =>
+            service.id === formData.id
+              ? {
+                  ...service,
+                  name: formData.name,
+                  description: formData.description,
+                  price: priceNumber,
+                  categoryId: formData.categoryId,
+                  imageUrl: formData.imageUrl || undefined,
+                  note: formData.note || undefined,
+                }
+              : service
+          )
+        );
+      } else {
+        const newService: Service = {
+          id:
+            services.length > 0
+              ? Math.max(...services.map((s) => s.id || 0)) + 1
+              : 1,
+          name: formData.name,
+          description: formData.description,
+          price: priceNumber,
+          categoryId: formData.categoryId,
+          imageUrl: formData.imageUrl || undefined,
+          note: formData.note || undefined,
+        };
+        setServices((prev) => [...prev, newService]);
+      }
+      closeModal();
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: `Bạn có chắc chắn muốn ${
+        isEditMode ? "sửa" : "thêm"
+      } dịch vụ này không?`,
+      onConfirm: action,
+    });
   };
 
   const handleCategorySubmit = (e: React.FormEvent) => {
@@ -169,29 +221,45 @@ function Services() {
       alert("Tên loại dịch vụ phải dài ít nhất 2 ký tự");
       return;
     }
-    if (isCategoryEditMode) {
-      setCategories((prev) =>
-        prev.map((category) =>
-          category.id === categoryFormData.id
-            ? { ...category, name: categoryFormData.name }
-            : category
-        )
-      );
-    } else {
-      const newCategory: Category = {
-        id:
-          categories.length > 0
-            ? Math.max(...categories.map((c) => c.id || 0)) + 1
-            : 1,
-        name: categoryFormData.name,
-      };
-      setCategories((prev) => [...prev, newCategory]);
-    }
-    closeCategoryModal();
+    const action = () => {
+      if (isCategoryEditMode) {
+        setCategories((prev) =>
+          prev.map((category) =>
+            category.id === categoryFormData.id
+              ? { ...category, name: categoryFormData.name }
+              : category
+          )
+        );
+      } else {
+        const newCategory: Category = {
+          id:
+            categories.length > 0
+              ? Math.max(...categories.map((c) => c.id || 0)) + 1
+              : 1,
+          name: categoryFormData.name,
+        };
+        setCategories((prev) => [...prev, newCategory]);
+      }
+      closeCategoryModal();
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: `Bạn có chắc chắn muốn ${
+        isCategoryEditMode ? "sửa" : "thêm"
+      } loại dịch vụ này không?`,
+      onConfirm: action,
+    });
   };
 
   const handleDelete = (id: number | null) => {
-    setServices((prev) => prev.filter((service) => service.id !== id));
+    const action = () => {
+      setServices((prev) => prev.filter((service) => service.id !== id));
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: "Bạn có chắc chắn muốn xóa dịch vụ này không?",
+      onConfirm: action,
+    });
   };
 
   const handleDeleteCategory = (id: number | null) => {
@@ -202,7 +270,14 @@ function Services() {
       alert("Không thể xóa loại dịch vụ đang được sử dụng!");
       return;
     }
-    setCategories((prev) => prev.filter((category) => category.id !== id));
+    const action = () => {
+      setCategories((prev) => prev.filter((category) => category.id !== id));
+    };
+    setConfirmationModal({
+      isOpen: true,
+      message: "Bạn có chắc chắn muốn xóa loại dịch vụ này không?",
+      onConfirm: action,
+    });
   };
 
   const handleCategoryInputChange = (
@@ -215,7 +290,9 @@ function Services() {
   const filteredServices = services.filter(
     (service) =>
       (service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchTerm.toLowerCase())) &&
+        service.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (service.note &&
+          service.note.toLowerCase().includes(searchTerm.toLowerCase()))) &&
       (categoryFilter === "" || service.categoryId === Number(categoryFilter))
   );
 
@@ -270,19 +347,25 @@ function Services() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">
                     Tên dịch vụ
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">
                     Mô tả
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">
                     Giá (VNĐ)
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">
                     Loại dịch vụ
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">
+                    Ảnh
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider align-middle">
+                    Ghi chú
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right align-middle">
                     Hành động
                   </th>
                 </tr>
@@ -294,19 +377,33 @@ function Services() {
                   );
                   return (
                     <tr key={service.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 align-middle">
                         {service.name}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500 line-clamp-2">
+                      <td className="px-6 py-4 text-sm text-gray-500 align-middle">
                         {service.description}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-gray-500 align-middle">
                         {service.price.toLocaleString("vi-VN")}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-gray-500 align-middle">
                         {category ? category.name : "Chưa phân loại"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 align-middle">
+                        {service.imageUrl ? (
+                          <img
+                            src={service.imageUrl}
+                            alt={service.name}
+                            className="w-16 h-16 object-cover rounded-lg mx-auto"
+                          />
+                        ) : (
+                          <span className="text-gray-500">Không có ảnh</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500 align-middle">
+                        {service.note || "Không có ghi chú"}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-right align-middle">
                         <button
                           onClick={() => openEditModal(service)}
                           className="text-blue-600 hover:text-blue-800 mr-4"
@@ -350,6 +447,16 @@ function Services() {
                     <p className="text-sm text-gray-500">
                       Loại: {category ? category.name : "Chưa phân loại"}
                     </p>
+                    {service.imageUrl && (
+                      <img
+                        src={service.imageUrl}
+                        alt={service.name}
+                        className="w-16 h-16 object-cover rounded-lg mt-2"
+                      />
+                    )}
+                    <p className="text-sm text-gray-500">
+                      Ghi chú: {service.note || "Không có ghi chú"}
+                    </p>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => openEditModal(service)}
@@ -384,7 +491,7 @@ function Services() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 px-2 py-1"
+                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                   required
                 />
               </div>
@@ -394,7 +501,7 @@ function Services() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 px-2 py-1"
+                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                   rows={3}
                 />
               </div>
@@ -405,8 +512,28 @@ function Services() {
                   name="price"
                   value={formData.price}
                   onChange={handleInputChange}
-                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 px-2 py-1"
+                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                   required
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block text-sm font-medium">Ảnh URL</label>
+                <input
+                  type="text"
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={handleInputChange}
+                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                />
+              </div>
+              <div className="mb-3">
+                <label className="block text-sm font-medium">Ghi chú</label>
+                <input
+                  type="text"
+                  name="note"
+                  value={formData.note}
+                  onChange={handleInputChange}
+                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                 />
               </div>
               <div className="mb-4">
@@ -417,7 +544,7 @@ function Services() {
                   name="categoryId"
                   value={formData.categoryId || ""}
                   onChange={handleSelectChange}
-                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 px-2 py-1"
+                  className="py-2 px-3 mt-1 w-full rounded border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                 >
                   <option value="">Chưa phân loại</option>
                   {categories.map((category) => (
@@ -481,6 +608,36 @@ function Services() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {confirmationModal.isOpen && (
+          <div
+            className="fixed top-1/2 left-1/2 z-50 w-full max-w-sm bg-white rounded-lg p-6 shadow-lg border border-gray-300
+                transform -translate-x-1/2 -translate-y-1/2"
+          >
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Xác nhận
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {confirmationModal.message}
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={closeConfirmationModal}
+                className="bg-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirm}
+                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
+              >
+                Xác nhận
+              </button>
+            </div>
           </div>
         )}
       </div>
